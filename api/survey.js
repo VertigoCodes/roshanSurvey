@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI_TEST = process.env.MONGO_URI_TEST;
+const MONGO_URI_PRODUCTION = process.env.MONGO_URI_PRODUCTION;
+
+const serverState = "test"
+
+const MONGO_URI = serverState === 'production' ? MONGO_URI_PRODUCTION : MONGO_URI_TEST;
 
 let cached = global.mongoose;
 if (!cached) {
