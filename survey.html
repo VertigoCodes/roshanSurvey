@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pride Sessions — Community Pulse Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --text: #f0eeff;
+    --text-muted: #8885a8;
+    --text-dim: #4a4860;
+    --accent-r: #ff6b6b;
+    --accent-o: #ffa94d;
+    --accent-y: #ffd43b;
+    --accent-g: #69db7c;
+    --accent-b: #74c0fc;
+    --accent-v: #b197fc;
+    --accent-p: #f783ac;
+    --primary: #b197fc;
+    --primary-glow: rgba(177,151,252,0.15);
+    --success: #69db7c;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background constellation */
+  .bg-canvas {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 680px; margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Pride stripe header */
+  .pride-stripe {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(90deg,
+      var(--accent-r) 0%, var(--accent-r) 14.28%,
+      var(--accent-o) 14.28%, var(--accent-o) 28.57%,
+      var(--accent-y) 28.57%, var(--accent-y) 42.85%,
+      var(--accent-g) 42.85%, var(--accent-g) 57.14%,
+      var(--accent-b) 57.14%, var(--accent-b) 71.42%,
+      var(--accent-v) 71.42%, var(--accent-v) 85.71%,
+      var(--accent-p) 85.71%, var(--accent-p) 100%
+    );
+    margin-bottom: 40px;
+    animation: stripe-in 1s ease forwards;
+  }
+  @keyframes stripe-in { from { opacity:0; transform: scaleX(0); transform-origin: left; } to { opacity:1; transform: scaleX(1); } }
+
+  /* Header */
+  .survey-header { margin-bottom: 40px; animation: fade-up 0.8s ease 0.2s both; }
+  .anon-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(105,219,124,0.12); border: 1px solid rgba(105,219,124,0.25);
+    color: var(--success); font-size: 12px; font-weight: 500;
+    padding: 5px 14px; border-radius: 100px; margin-bottom: 18px;
+  }
+  .anon-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .survey-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 38px);
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .survey-title em { font-style: italic; color: var(--primary); }
+
+  .survey-intro {
+    font-size: 15px; line-height: 1.75;
+    color: var(--text-muted); max-width: 560px;
+  }
+
+  /* Progress */
+  .progress-track {
+    background: var(--surface2); border-radius: 100px;
+    height: 4px; margin-bottom: 8px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--accent-v), var(--accent-b));
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-meta {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--text-dim); margin-bottom: 36px;
+  }
+
+  /* Section */
+  .section { margin-bottom: 44px; animation: fade-up 0.5s ease both; }
+  .section-tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--primary); background: var(--primary-glow);
+    border: 1px solid rgba(177,151,252,0.2);
+    padding: 4px 12px; border-radius: 100px; margin-bottom: 22px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px; color: var(--text);
+    margin-bottom: 6px; line-height: 1.3;
+  }
+  .section-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 28px; }
+
+  /* Question block */
+  .q { margin-bottom: 28px; }
+  .q-label {
+    font-size: 15px; font-weight: 500; color: var(--text);
+    margin-bottom: 5px; line-height: 1.5;
+  }
+  .q-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+
+  /* Options */
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 13px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); cursor: pointer;
+    transition: all 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .opt:hover { background: var(--surface2); border-color: var(--border-hover); }
+  .opt.selected {
+    background: var(--primary-glow);
+    border-color: rgba(177,151,252,0.4);
+  }
+  .opt-box {
+    width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+    border-radius: 4px; border: 1.5px solid var(--border-hover);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s;
+  }
+  .opt.selected .opt-box { background: var(--primary); border-color: var(--primary); }
+  .opt-radio {
+    width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+    border-radius: 50%; border: 1.5px solid var(--border-hover);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s;
+  }
+  .opt.selected .opt-radio { border-color: var(--primary); }
+  .opt.selected .opt-radio::after {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--primary); display: block;
+  }
+  .opt-text { font-size: 14px; color: var(--text); line-height: 1.5; }
+  .opt-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .check-svg { display: none; }
+  .opt.selected .check-svg { display: block; }
+
+  /* Scale */
+  .scale-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .scale-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .scale-btn {
+    width: 52px; height: 52px; border-radius: var(--radius-sm);
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-muted); font-size: 16px; font-weight: 500;
+    cursor: pointer; transition: all 0.18s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .scale-btn:hover { background: var(--surface2); border-color: var(--border-hover); color: var(--text); }
+  .scale-btn.sel { background: var(--primary-glow); border-color: var(--primary); color: var(--primary); }
+  .scale-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); }
+
+  /* Emoji scale */
+  .emoji-scale { display: flex; gap: 6px; flex-wrap: wrap; }
+  .emoji-btn {
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    background: var(--surface); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.18s; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .emoji-btn:hover { background: var(--surface2); border-color: var(--border-hover); transform: translateY(-2px); }
+  .emoji-btn.sel { background: var(--primary-glow); border-color: var(--primary); transform: translateY(-2px); }
+  .emoji-icon { font-size: 22px; line-height: 1; }
+  .emoji-label { font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+  .emoji-btn.sel .emoji-label { color: var(--primary); }
+
+  /* Textarea */
+  textarea {
+    width: 100%; min-height: 100px; resize: vertical;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 13px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+    outline: none; transition: border-color 0.18s; line-height: 1.6;
+  }
+  textarea::placeholder { color: var(--text-dim); }
+  textarea:focus { border-color: rgba(177,151,252,0.4); }
+
+  /* Skip */
+  .skip-btn {
+    display: inline-block; margin-top: 8px;
+    font-size: 12px; color: var(--text-dim);
+    cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+    background: none; border: none;
+    transition: color 0.15s;
+  }
+  .skip-btn:hover { color: var(--text-muted); }
+
+  /* Safe note */
+  .safe-note {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: rgba(105,219,124,0.07); border: 1px solid rgba(105,219,124,0.15);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    font-size: 13px; color: #8fcf9a; line-height: 1.6; margin-bottom: 24px;
+  }
+  .safe-icon { flex-shrink: 0; margin-top: 1px; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 36px 0; }
+
+  /* Nav buttons */
+  .nav-row { display: flex; gap: 12px; margin-top: 36px; flex-wrap: wrap; }
+  .btn-next {
+    padding: 13px 32px; border-radius: var(--radius-sm);
+    background: var(--primary); color: #0a0a0f;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+    border: none; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-next:hover { background: #c8b5ff; transform: translateY(-1px); }
+  .btn-next:active { transform: translateY(0); }
+  .btn-back {
+    padding: 13px 24px; border-radius: var(--radius-sm);
+    background: transparent; color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+  }
+  .btn-back:hover { background: var(--surface2); border-color: var(--border-hover); color: var(--text); }
+
+  /* Pages */
+  .page { display: none; }
+  .page.active { display: block; animation: fade-up 0.4s ease both; }
+  @keyframes fade-up { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+
+  /* Thank you */
+  .ty-wrap { text-align: center; padding: 40px 20px; }
+  .ty-checkmark {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: rgba(105,219,124,0.15); border: 1px solid rgba(105,219,124,0.3);
+    margin: 0 auto 24px;
+    display: flex; align-items: center; justify-content: center;
+    animation: pop 0.5s cubic-bezier(.17,.67,.3,1.33) both;
+  }
+  @keyframes pop { from { opacity:0; transform: scale(0.5); } to { opacity:1; transform: scale(1); } }
+  .ty-title { font-family: 'DM Serif Display', serif; font-size: 32px; margin-bottom: 14px; }
+  .ty-sub { font-size: 15px; color: var(--text-muted); line-height: 1.8; max-width: 460px; margin: 0 auto 28px; }
+  .result-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    max-width: 440px; margin: 0 auto 32px; text-align: left;
+  }
+  .result-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+  }
+  .result-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .result-val { font-size: 15px; font-weight: 500; color: var(--primary); }
+  .btn-restart {
+    padding: 11px 24px; border-radius: var(--radius-sm);
+    background: transparent; color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+  }
+  .btn-restart:hover { border-color: var(--border-hover); color: var(--text); }
+
+  /* Step indicator */
+  .step-dots {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 28px;
+  }
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .step-dot.done { background: var(--primary); border-color: var(--primary); }
+  .step-dot.active { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 8px var(--primary); width: 24px; border-radius: 4px; }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .wrapper { padding: 32px 16px 60px; }
+    .scale-btn { width: 44px; height: 44px; font-size: 14px; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+
+<div class="wrapper">
+  <div class="pride-stripe"></div>
+
+  <!-- Header (shown on all pages except thank you) -->
+  <div class="survey-header" id="mainHeader">
+    <div class="anon-pill">
+      <div class="anon-dot"></div>
+      Fully anonymous · No names collected · No PII stored
+    </div>
+    <h1 class="survey-title">Pride Sessions —<br><em>Community Pulse Survey</em></h1>
+    <p class="survey-intro">Your responses directly shape our Pride programming. This is a safe space — every question is optional, skip anything that doesn't feel right. No identifying information is ever collected.</p>
+  </div>
+
+  <!-- Progress bar -->
+  <div id="progressWrap">
+    <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+    <div class="progress-meta">
+      <span id="progLabel">Not started</span>
+      <span id="progPct">0%</span>
+    </div>
+    <div class="step-dots" id="stepDots"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 1 — Welcome & Participation
+  ════════════════════════════════════════ -->
+  <div class="page active" id="pg1">
+    <div class="section">
+      <div class="section-tag">Section 1 of 6</div>
+      <h2 class="section-title">Your participation matters</h2>
+      <p class="section-desc">Before we begin, a few foundational questions about your relationship with Pride programming at work.</p>
+
+      <div class="safe-note">
+        <span class="safe-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1.5L2 4v4c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V4L8 1.5z" stroke="#69db7c" stroke-width="1.2" fill="none"/>
+            <path d="M5.5 8l2 2 3-3" stroke="#69db7c" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        Responses are aggregated and shared only with the DEI programme team. Your individual responses are never identified. There are no right or wrong answers.
+      </div>
+
+      <div class="q">
+        <div class="q-label">Have you attended any Pride-related sessions at this organisation before?</div>
+        <div class="q-hint">Pick one</div>
+        <div class="opts" id="q1a">
+          <div class="opt" onclick="radio(this,'q1a')"><div class="opt-radio"></div><div class="opt-text">Yes, I have attended one or more sessions</div></div>
+          <div class="opt" onclick="radio(this,'q1a')"><div class="opt-radio"></div><div class="opt-text">No, but I would like to</div></div>
+          <div class="opt" onclick="radio(this,'q1a')"><div class="opt-radio"></div><div class="opt-text">No, and I am unsure whether I would</div></div>
+          <div class="opt" onclick="radio(this,'q1a')"><div class="opt-radio"></div><div class="opt-text">I was unaware there were Pride sessions</div></div>
+        </div>
+        <button class="skip-btn" onclick="">Prefer not to say</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">How would you describe your current level of engagement with LGBTQ+ inclusion initiatives at work?</div>
+        <div class="q-hint">Pick one</div>
+        <div class="opts" id="q1b">
+          <div class="opt" onclick="radio(this,'q1b')"><div class="opt-radio"></div><div class="opt-text">Very engaged — I participate regularly and advocate actively</div></div>
+          <div class="opt" onclick="radio(this,'q1b')"><div class="opt-radio"></div><div class="opt-text">Engaged — I attend sessions when I can</div></div>
+          <div class="opt" onclick="radio(this,'q1b')"><div class="opt-radio"></div><div class="opt-text">Curious but not yet participating</div></div>
+          <div class="opt" onclick="radio(this,'q1b')"><div class="opt-radio"></div><div class="opt-text">Not engaged currently</div></div>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Overall, how would you rate our organisation's current efforts on LGBTQ+ inclusion?</div>
+        <div class="q-hint">1 = very poor · 5 = excellent</div>
+        <div class="scale-wrap">
+          <div class="scale-btns" id="q1c">
+            <button class="scale-btn" onclick="setScale('q1c',1,this)">1</button>
+            <button class="scale-btn" onclick="setScale('q1c',2,this)">2</button>
+            <button class="scale-btn" onclick="setScale('q1c',3,this)">3</button>
+            <button class="scale-btn" onclick="setScale('q1c',4,this)">4</button>
+            <button class="scale-btn" onclick="setScale('q1c',5,this)">5</button>
+          </div>
+          <div class="scale-labels"><span>Very poor</span><span>Excellent</span></div>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-next" onclick="goPage(2)">Continue <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 2 — Comfort & Safety
+  ════════════════════════════════════════ -->
+  <div class="page" id="pg2">
+    <div class="section">
+      <div class="section-tag">Section 2 of 6</div>
+      <h2 class="section-title">Comfort &amp; psychological safety</h2>
+      <p class="section-desc">Understanding where people feel safe helps us design sessions that are genuinely accessible — not just technically available.</p>
+
+      <div class="q">
+        <div class="q-label">How comfortable do you feel attending Pride-related sessions at work?</div>
+        <div class="q-hint">1 = not comfortable at all · 5 = completely comfortable</div>
+        <div class="scale-wrap">
+          <div class="scale-btns" id="q2a">
+            <button class="scale-btn" onclick="setScale('q2a',1,this)">1</button>
+            <button class="scale-btn" onclick="setScale('q2a',2,this)">2</button>
+            <button class="scale-btn" onclick="setScale('q2a',3,this)">3</button>
+            <button class="scale-btn" onclick="setScale('q2a',4,this)">4</button>
+            <button class="scale-btn" onclick="setScale('q2a',5,this)">5</button>
+          </div>
+          <div class="scale-labels"><span>Not comfortable</span><span>Completely comfortable</span></div>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">How comfortable do you feel being visibly associated with Pride sessions (e.g. seen attending, sharing on internal channels)?</div>
+        <div class="q-hint">1 = not comfortable at all · 5 = completely comfortable</div>
+        <div class="scale-wrap">
+          <div class="scale-btns" id="q2b">
+            <button class="scale-btn" onclick="setScale('q2b',1,this)">1</button>
+            <button class="scale-btn" onclick="setScale('q2b',2,this)">2</button>
+            <button class="scale-btn" onclick="setScale('q2b',3,this)">3</button>
+            <button class="scale-btn" onclick="setScale('q2b',4,this)">4</button>
+            <button class="scale-btn" onclick="setScale('q2b',5,this)">5</button>
+          </div>
+          <div class="scale-labels"><span>Not comfortable</span><span>Completely comfortable</span></div>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">What would most increase your sense of safety at Pride sessions?</div>
+        <div class="q-hint">Select all that apply</div>
+        <div class="opts" id="q2c">
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Leadership visibly sponsoring or attending</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Attendance is not tracked or reported</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Virtual / anonymous participation option</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Ground rules and community agreements set upfront</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Ally training completed before the session (so the room feels informed)</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">External / neutral facilitator rather than internal HR</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Smaller, more intimate group sizes (under 20 people)</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">A recording made available so I can watch privately</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">A dedicated safe-space / breakout room option</div></div>
+        </div>
+        <button class="skip-btn">Skip this question</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">How psychologically safe do you feel at this organisation overall when it comes to LGBTQ+ topics?</div>
+        <div class="q-hint">How does each statement resonate with you?</div>
+        <div class="opts" id="q2d">
+          <div class="opt" onclick="radio(this,'q2d')"><div class="opt-radio"></div><div class="opt-text">Very safe — I can speak openly without concern</div></div>
+          <div class="opt" onclick="radio(this,'q2d')"><div class="opt-radio"></div><div class="opt-text">Mostly safe — with some people or in some situations</div></div>
+          <div class="opt" onclick="radio(this,'q2d')"><div class="opt-radio"></div><div class="opt-text">Somewhat unsafe — I am selective about what I share</div></div>
+          <div class="opt" onclick="radio(this,'q2d')"><div class="opt-radio"></div><div class="opt-text">Unsafe — I actively conceal my views or identity</div></div>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goPage(1)">← Back</button>
+      <button class="btn-next" onclick="goPage(3)">Continue <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 3 — Session Interests (Soft Skills)
+  ════════════════════════════════════════ -->
+  <div class="page" id="pg3">
+    <div class="section">
+      <div class="section-tag">Section 3 of 6</div>
+      <h2 class="section-title">Session interests — soft skills</h2>
+      <p class="section-desc">Soft skill sessions focus on lived experience, empathy, storytelling, and human connection. These help build understanding and allyship.</p>
+
+      <div class="q">
+        <div class="q-label">How interested are you in soft-skill Pride sessions (lived experience panels, open conversations, storytelling)?</div>
+        <div class="emoji-scale" id="q3a">
+          <button class="emoji-btn" onclick="emojiPick('q3a',this)"><div class="emoji-icon">😐</div><div class="emoji-label">Not interested</div></button>
+          <button class="emoji-btn" onclick="emojiPick('q3a',this)"><div class="emoji-icon">🤔</div><div class="emoji-label">Slightly</div></button>
+          <button class="emoji-btn" onclick="emojiPick('q3a',this)"><div class="emoji-icon">😊</div><div class="emoji-label">Moderately</div></button>
+          <button class="emoji-btn" onclick="emojiPick('q3a',this)"><div class="emoji-icon">🙌</div><div class="emoji-label">Very interested</div></button>
+          <button class="emoji-btn" onclick="emojiPick('q3a',this)"><div class="emoji-icon">🔥</div><div class="emoji-label">Essential!</div></button>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Which soft-skill session formats appeal to you most?</div>
+        <div class="q-hint">Select all that apply</div>
+        <div class="opts" id="q3b">
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Lived experience panel — LGBTQ+ colleagues sharing their journeys<div class="opt-sub">Hearing real stories from within the organisation</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Moderated open conversation — structured safe dialogue<div class="opt-sub">Facilitated discussion with community agreements</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Ally listening session — space for non-LGBTQ+ colleagues to learn<div class="opt-sub">Focused on building empathy and understanding</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Storytelling workshop — community members share experiences<div class="opt-sub">Facilitated creative or narrative format</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Mental health &amp; wellbeing — LGBTQ+ specific experiences and support<div class="opt-sub">Hosted with a mental health professional or advocate</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Coming out at work — navigating disclosure in a professional context<div class="opt-sub">For those considering, in process, or recently out</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Global perspectives — LGBTQ+ experiences across cultures and regions<div class="opt-sub">Especially relevant for international teams</div></div></div>
+        </div>
+        <button class="skip-btn">Skip this question</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Which soft-skill topics feel most important to you right now?</div>
+        <div class="q-hint">Select up to 3</div>
+        <div class="opts" id="q3c">
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">How to be a genuine, active ally (not performative)</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Understanding intersectionality — race, disability, gender, and LGBTQ+ identity</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Understanding LGBTQ+ terminology, identities, and language evolution</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">The experience of being LGBTQ+ in the workplace specifically</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Trans and non-binary inclusion — specific experiences and needs</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Microaggressions — what they are, how to recognise and respond</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">History and significance of Pride — beyond the rainbow branding</div></div>
+        </div>
+        <button class="skip-btn">Skip this question</button>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goPage(2)">← Back</button>
+      <button class="btn-next" onclick="goPage(4)">Continue <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 4 — Session Interests (Hard Skills)
+  ════════════════════════════════════════ -->
+  <div class="page" id="pg4">
+    <div class="section">
+      <div class="section-tag">Section 4 of 6</div>
+      <h2 class="section-title">Session interests — hard skills</h2>
+      <p class="section-desc">Hard skill sessions give practical tools, frameworks, and techniques to apply directly in your day-to-day work — turning good intentions into concrete action.</p>
+
+      <div class="q">
+        <div class="q-label">How interested are you in hard-skill Pride sessions (practical tools, inclusive processes, frameworks)?</div>
+        <div class="emoji-scale" id="q4a">
+          <button class="emoji-btn" onclick="emojiPick('q4a',this)"><div class="emoji-icon">😐</div><div class="emoji-label">Not interested</div></button>
+          <button class="emoji-btn" onclick="emojiPick('q4a',this)"><div class="emoji-icon">🤔</div><div class="emoji-label">Slightly</div></button>
+          <button class="emoji-btn" onclick="emojiPick('q4a',this)"><div class="emoji-icon">😊</div><div class="emoji-label">Moderately</div></button>
+          <button class="emoji-btn" onclick="emojiPick('q4a',this)"><div class="emoji-icon">🙌</div><div class="emoji-label">Very interested</div></button>
+          <button class="emoji-btn" onclick="emojiPick('q4a',this)"><div class="emoji-icon">🔥</div><div class="emoji-label">Essential!</div></button>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Which hard-skill session formats would you find most useful?</div>
+        <div class="q-hint">Select all that apply</div>
+        <div class="opts" id="q4b">
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Workshop — hands-on, practical exercises with takeaways<div class="opt-sub">Leave with tools you can apply immediately</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Lunch &amp; learn — 45-minute focused skill session<div class="opt-sub">Low commitment, high value</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Manager-specific training — leading inclusive teams<div class="opt-sub">Content tailored for people leaders</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Self-paced learning — resources I can explore in my own time<div class="opt-sub">No live attendance required</div></div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">External speaker / expert session — specialist knowledge<div class="opt-sub">Bringing in outside expertise and research</div></div></div>
+        </div>
+        <button class="skip-btn">Skip this question</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Which hard-skill topics would be most valuable to you?</div>
+        <div class="q-hint">Select all that apply</div>
+        <div class="opts" id="q4c">
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Writing inclusive job descriptions and performance reviews</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Designing inclusive policies — parental leave, name/pronoun standards, benefits</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">How to use pronouns correctly and create a pronoun-safe culture</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Inclusive design — UX, products, and communications for all users</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Inclusive interviewing and bias-aware hiring practices</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">LGBTQ+ data and metrics — measuring inclusion meaningfully</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Accessible and inclusive communication — internal and external</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">How to respond when you witness discrimination or a microaggression</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">ERG / employee network leadership — how to run an effective community</div></div>
+        </div>
+        <button class="skip-btn">Skip this question</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">If you had to prioritise one type of session, which would it be?</div>
+        <div class="q-hint">Pick one</div>
+        <div class="opts" id="q4d">
+          <div class="opt" onclick="radio(this,'q4d')"><div class="opt-radio"></div><div class="opt-text"><strong style="font-weight:600">Soft skills</strong> — I want to feel connected, heard, and understood</div></div>
+          <div class="opt" onclick="radio(this,'q4d')"><div class="opt-radio"></div><div class="opt-text"><strong style="font-weight:600">Hard skills</strong> — I want practical tools I can use right away</div></div>
+          <div class="opt" onclick="radio(this,'q4d')"><div class="opt-radio"></div><div class="opt-text"><strong style="font-weight:600">Both equally</strong> — I value the blend of human connection and practical action</div></div>
+          <div class="opt" onclick="radio(this,'q4d')"><div class="opt-radio"></div><div class="opt-text">I'm not sure — it depends on the specific topic and format</div></div>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goPage(3)">← Back</button>
+      <button class="btn-next" onclick="goPage(5)">Continue <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 5 — Non-Disclosure & Barriers
+  ════════════════════════════════════════ -->
+  <div class="page" id="pg5">
+    <div class="section">
+      <div class="section-tag">Section 5 of 6</div>
+      <h2 class="section-title">Non-disclosure &amp; barriers</h2>
+      <p class="section-desc">This is the most sensitive section. Every question here is completely optional. Responses help us understand what barriers exist so we can genuinely address them — not to identify individuals.</p>
+
+      <div class="safe-note">
+        <span class="safe-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1.5L2 4v4c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V4L8 1.5z" stroke="#69db7c" stroke-width="1.2" fill="none"/>
+            <path d="M5.5 8l2 2 3-3" stroke="#69db7c" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        Choosing not to answer any question in this section is a completely valid and respected choice. There is no pressure. Aggregate data only — no individual response is ever visible.
+      </div>
+
+      <div class="q">
+        <div class="q-label">If you have chosen not to disclose your identity at work, what are the main reasons?</div>
+        <div class="q-hint">Select all that apply · Skip entirely if this doesn't apply or you prefer not to answer</div>
+        <div class="opts" id="q5a">
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Concerned about impact on career progression or opportunities</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Uncertain how colleagues or managers would react</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">My personal life is separate from work — disclosure isn't relevant to me</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Legal or safety concerns specific to my country or region</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">I don't see visible LGBTQ+ role models or leaders in this organisation</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Past negative experience here or at a previous employer</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">I'm still exploring or understanding my own identity</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Family or community pressures outside work</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Workplace culture feels unwelcoming even without explicit incidents</div></div>
+        </div>
+        <button class="skip-btn">This doesn't apply to me / skip entirely</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">What would make you more likely to attend a Pride session?</div>
+        <div class="q-hint">Select all that apply</div>
+        <div class="opts" id="q5b">
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Sessions held during work hours — not treated as an "extra" activity</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Virtual-only or hybrid option available</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Seeing my direct manager or team attend</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Senior leadership visibly championing the session</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Content that feels directly relevant to my role or team</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">A clear explanation of who will be in the room</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Recording available so I can watch privately at my own pace</div></div>
+          <div class="opt" onclick="check(this)"><div class="opt-box"><svg class="check-svg" width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="opt-text">Knowing the session is facilitated by an LGBTQ+ person</div></div>
+        </div>
+        <button class="skip-btn">Skip this question</button>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Have you ever felt excluded or unwelcome at an LGBTQ+ inclusion event at work?</div>
+        <div class="q-hint">Pick one — completely optional</div>
+        <div class="opts" id="q5c">
+          <div class="opt" onclick="radio(this,'q5c')"><div class="opt-radio"></div><div class="opt-text">Yes — and I'd like to share more in the open text box below</div></div>
+          <div class="opt" onclick="radio(this,'q5c')"><div class="opt-radio"></div><div class="opt-text">Yes — but I don't want to share details</div></div>
+          <div class="opt" onclick="radio(this,'q5c')"><div class="opt-radio"></div><div class="opt-text">No</div></div>
+          <div class="opt" onclick="radio(this,'q5c')"><div class="opt-radio"></div><div class="opt-text">I haven't attended one yet</div></div>
+        </div>
+        <button class="skip-btn">Prefer not to say</button>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goPage(4)">← Back</button>
+      <button class="btn-next" onclick="goPage(6)">Continue <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 6 — About You + Open Feedback
+  ════════════════════════════════════════ -->
+  <div class="page" id="pg6">
+    <div class="section">
+      <div class="section-tag">Section 6 of 6</div>
+      <h2 class="section-title">About you &amp; final thoughts</h2>
+      <p class="section-desc">All questions here are completely optional. The demographic information helps us design sessions that reflect the full diversity of our community.</p>
+
+      <div class="q">
+        <div class="q-label">How do you identify in relation to the LGBTQ+ community?</div>
+        <div class="q-hint">Helps us understand who is engaging with Pride programming — completely optional</div>
+        <div class="opts" id="q6a">
+          <div class="opt" onclick="radio(this,'q6a')"><div class="opt-radio"></div><div class="opt-text">I identify as LGBTQ+</div></div>
+          <div class="opt" onclick="radio(this,'q6a')"><div class="opt-radio"></div><div class="opt-text">I am an ally</div></div>
+          <div class="opt" onclick="radio(this,'q6a')"><div class="opt-radio"></div><div class="opt-text">I'm curious and still exploring</div></div>
+          <div class="opt" onclick="radio(this,'q6a')"><div class="opt-radio"></div><div class="opt-text">I prefer not to say</div></div>
+        </div>
+      </div>
+
+      <div class="q">
+        <div class="q-label">What is your role level in the organisation?</div>
+        <div class="q-hint">Helps us tailor session framing — no identifying details collected</div>
+        <div class="opts" id="q6b">
+          <div class="opt" onclick="radio(this,'q6b')"><div class="opt-radio"></div><div class="opt-text">Individual contributor</div></div>
+          <div class="opt" onclick="radio(this,'q6b')"><div class="opt-radio"></div><div class="opt-text">Manager / team lead</div></div>
+          <div class="opt" onclick="radio(this,'q6b')"><div class="opt-radio"></div><div class="opt-text">Senior leader / director+</div></div>
+          <div class="opt" onclick="radio(this,'q6b')"><div class="opt-radio"></div><div class="opt-text">Prefer not to say</div></div>
+        </div>
+      </div>
+
+      <div class="q">
+        <div class="q-label">How long have you been with the organisation?</div>
+        <div class="opts" id="q6c">
+          <div class="opt" onclick="radio(this,'q6c')"><div class="opt-radio"></div><div class="opt-text">Less than 1 year</div></div>
+          <div class="opt" onclick="radio(this,'q6c')"><div class="opt-radio"></div><div class="opt-text">1–3 years</div></div>
+          <div class="opt" onclick="radio(this,'q6c')"><div class="opt-radio"></div><div class="opt-text">3–5 years</div></div>
+          <div class="opt" onclick="radio(this,'q6c')"><div class="opt-radio"></div><div class="opt-text">More than 5 years</div></div>
+          <div class="opt" onclick="radio(this,'q6c')"><div class="opt-radio"></div><div class="opt-text">Prefer not to say</div></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="q">
+        <div class="q-label">Is there anything specific you'd like to see at a Pride session that we haven't covered?</div>
+        <div class="q-hint">Open text · Completely optional · Fully anonymous</div>
+        <textarea id="q6d" placeholder="Your ideas, suggestions, topics you'd love to see covered, formats you'd enjoy..."></textarea>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Is there anything about your experience as an LGBTQ+ person (or ally) at this organisation you'd like the Pride programme team to know?</div>
+        <div class="q-hint">Open text · Completely optional · Fully anonymous</div>
+        <textarea id="q6e" placeholder="Share anything that would help us build a more genuinely inclusive community..."></textarea>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Would you be open to being involved in shaping or facilitating a Pride session?</div>
+        <div class="q-hint">No commitment — just gauging interest</div>
+        <div class="opts" id="q6f">
+          <div class="opt" onclick="radio(this,'q6f')"><div class="opt-radio"></div><div class="opt-text">Yes — I'd love to help shape the programme</div></div>
+          <div class="opt" onclick="radio(this,'q6f')"><div class="opt-radio"></div><div class="opt-text">Maybe — tell me more before I commit</div></div>
+          <div class="opt" onclick="radio(this,'q6f')"><div class="opt-radio"></div><div class="opt-text">No — I'd rather just attend</div></div>
+          <div class="opt" onclick="radio(this,'q6f')"><div class="opt-radio"></div><div class="opt-text">Prefer not to say</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goPage(5)">← Back</button>
+      <button class="btn-next" onclick="submitSurvey()" style="background:var(--success);color:#0a0a0f">
+        Submit responses
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 7 — Thank You
+  ════════════════════════════════════════ -->
+  <div class="page" id="pg7">
+    <div class="ty-wrap">
+      <div class="ty-checkmark">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path d="M6 14l6 6 10-12" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="pride-stripe" style="max-width:200px;margin:0 auto 24px"></div>
+      <h2 class="ty-title">Thank you for sharing</h2>
+      <p class="ty-sub">Your responses have been recorded anonymously and will directly shape our Pride programming. Every answer matters — including the questions you chose to skip.</p>
+
+      <div class="result-grid">
+        <div class="result-item"><div class="result-label">Privacy</div><div class="result-val">Fully anonymous</div></div>
+        <div class="result-item"><div class="result-label">Data stored</div><div class="result-val">No PII, ever</div></div>
+        <div class="result-item"><div class="result-label">Who sees results</div><div class="result-val">DEI team only</div></div>
+        <div class="result-item"><div class="result-label">Reported as</div><div class="result-val">Aggregate only</div></div>
+      </div>
+
+      <p class="ty-sub" style="font-size:14px">Aggregate results will be shared back to the community. If you'd like to get more involved in shaping our Pride programming, reach out to the DEI team directly.</p>
+
+      <button class="btn-restart" onclick="restart()">Start over</button>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+const PAGES = 7;
+const PAGE_LABELS = ['','Participation','Comfort & safety','Soft skills','Hard skills','Non-disclosure','About you','Complete'];
+
+function goPage(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pg'+n).classList.add('active');
+  updateProgress(n);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress(n) {
+  const pct = Math.round(((n-1) / (PAGES-1)) * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progLabel').textContent = n < PAGES ? 'Section ' + (n) + ' of 6 — ' + PAGE_LABELS[n] : 'Complete';
+  document.getElementById('progPct').textContent = pct + '%';
+  const dots = document.getElementById('stepDots');
+  dots.innerHTML = '';
+  for (let i = 1; i <= 6; i++) {
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+    dots.appendChild(d);
+  }
+  if (n === 7) {
+    document.getElementById('mainHeader').style.display = 'none';
+    document.getElementById('progressWrap').style.display = 'none';
+  }
+}
+
+function radio(el, groupId) {
+  const grp = document.getElementById(groupId);
+  grp.querySelectorAll('.opt').forEach(o => {
+    o.classList.remove('selected');
+    const r = o.querySelector('.opt-radio');
+    if (r) r.style.borderColor = '';
+  });
+  el.classList.add('selected');
+}
+
+function check(el) {
+  el.classList.toggle('selected');
+}
+
+function setScale(groupId, val, btn) {
+  document.getElementById(groupId).querySelectorAll('.scale-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function emojiPick(groupId, btn) {
+  document.getElementById(groupId).querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function restart() {
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelectorAll('textarea').forEach(t => t.value = '');
+  document.getElementById('mainHeader').style.display = '';
+  document.getElementById('progressWrap').style.display = '';
+  goPage(1);
+}
+
+async function submitSurvey() {
+  const responses = {};
+
+  function getRadio(groupId) {
+    const sel = document.querySelector('#' + groupId + ' .selected .opt-text');
+    return sel ? sel.textContent.trim() : null;
+  }
+
+  function getCheck(groupId) {
+    const items = [];
+    document.querySelectorAll('#' + groupId + ' .selected .opt-text').forEach(el => {
+      items.push(el.textContent.trim());
+    });
+    return items.length ? items : null;
+  }
+
+  function getScale(groupId) {
+    const sel = document.querySelector('#' + groupId + ' .sel');
+    return sel ? sel.textContent.trim() : null;
+  }
+
+  function getEmoji(groupId) {
+    const sel = document.querySelector('#' + groupId + ' .sel .emoji-label');
+    return sel ? sel.textContent.trim() : null;
+  }
+
+  function getTextArea(id) {
+    const el = document.getElementById(id);
+    return el && el.value.trim() ? el.value.trim() : null;
+  }
+
+  responses.q1a = getRadio('q1a');
+  responses.q1b = getRadio('q1b');
+  responses.q1c = getScale('q1c');
+  responses.q2a = getScale('q2a');
+  responses.q2b = getScale('q2b');
+  responses.q2c = getCheck('q2c');
+  responses.q2d = getRadio('q2d');
+  responses.q3a = getEmoji('q3a');
+  responses.q3b = getCheck('q3b');
+  responses.q3c = getCheck('q3c');
+  responses.q4a = getEmoji('q4a');
+  responses.q4b = getCheck('q4b');
+  responses.q4c = getCheck('q4c');
+  responses.q4d = getRadio('q4d');
+  responses.q5a = getCheck('q5a');
+  responses.q5b = getCheck('q5b');
+  responses.q5c = getRadio('q5c');
+  responses.q6a = getRadio('q6a');
+  responses.q6b = getRadio('q6b');
+  responses.q6c = getRadio('q6c');
+  responses.q6d = getTextArea('q6d');
+  responses.q6e = getTextArea('q6e');
+  responses.q6f = getRadio('q6f');
+  responses.timestamp = new Date().toISOString();
+
+  try {
+    const response = await fetch('http://localhost:3000/api/survey', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(responses)
+    });
+
+    if (response.ok) {
+      goPage(7);
+    } else {
+      alert('Submission failed. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Could not submit. Please check your connection and try again.');
+  }
+}
+
+// Background constellation
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function initStars() {
+  stars = [];
+  const colors = ['#ff6b6b','#ffa94d','#ffd43b','#69db7c','#74c0fc','#b197fc','#f783ac'];
+  for (let i = 0; i < 60; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speed: Math.random() * 0.2 + 0.05,
+      opacity: Math.random() * 0.5 + 0.1
+    });
+  }
+}
+
+function drawStars() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = s.color;
+    ctx.globalAlpha = s.opacity;
+    ctx.fill();
+    s.y -= s.speed;
+    if (s.y < -5) { s.y = canvas.height + 5; s.x = Math.random() * canvas.width; }
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(drawStars);
+}
+
+resize();
+initStars();
+drawStars();
+window.addEventListener('resize', () => { resize(); initStars(); });
+
+updateProgress(1);
+</script>
+</body>
+</html>
