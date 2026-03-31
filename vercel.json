@@ -11,12 +11,17 @@
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https:;"
         }
       ]
     }
   ],
   "rewrites": [
     { "source": "/", "destination": "/survey.html" },
-    { "source": "/:path*", "destination": "/survey.html" }
+    { "source": "/survey", "destination": "/survey.html" },
+    { "source": "/((?!api/).*)", "destination": "/survey.html" }
   ]
 }
