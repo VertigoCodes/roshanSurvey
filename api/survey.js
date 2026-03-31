@@ -46,7 +46,7 @@ const SurveySchema = new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now }
 }, { strict: false });
 
-const Survey = mongoose.models.Survey || mongoose.model('Survey', SurveySchema);
+const Survey = mongoose.models.Survey || mongoose.model('Survey', SurveySchema, 'survey_responses');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
