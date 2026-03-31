@@ -286,6 +286,14 @@
   }
   .btn-restart:hover { border-color: var(--border-hover); color: var(--text); }
 
+  .btn-next.loading { pointer-events: none; opacity: 0.7; }
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid rgba(10,10,15,0.3);
+    border-top-color: #0a0a0f; border-radius: 50%;
+    animation: spin 0.6s linear infinite; display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   /* Step indicator */
   .step-dots {
     display: flex; gap: 8px; align-items: center; margin-bottom: 28px;
@@ -740,9 +748,9 @@
 
     <div class="nav-row">
       <button class="btn-back" onclick="goPage(5)">← Back</button>
-      <button class="btn-next" onclick="submitSurvey()" style="background:var(--success);color:#0a0a0f">
-        Submit responses
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <button class="btn-next" id="submitBtn" onclick="submitSurvey()" style="background:var(--success);color:#0a0a0f">
+        <span id="submitText">Submit responses</span>
+        <svg id="submitArrow" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
   </div>
@@ -840,6 +848,14 @@ function restart() {
 }
 
 async function submitSurvey() {
+  const btn = document.getElementById('submitBtn');
+  const textEl = document.getElementById('submitText');
+  const arrowEl = document.getElementById('submitArrow');
+
+  btn.classList.add('loading');
+  textEl.textContent = 'Submitting...';
+  arrowEl.outerHTML = '<span class="spinner" id="submitSpinner"></span>';
+
   const responses = {};
 
   function getRadio(groupId) {
@@ -906,11 +922,23 @@ async function submitSurvey() {
       goPage(7);
     } else {
       alert('Submission failed. Please try again.');
+      resetSubmitBtn();
     }
   } catch (error) {
     console.error('Error:', error);
     alert('Could not submit. Please check your connection and try again.');
+    resetSubmitBtn();
   }
+}
+
+function resetSubmitBtn() {
+  const btn = document.getElementById('submitBtn');
+  const textEl = document.getElementById('submitText');
+  const spinner = document.getElementById('submitSpinner');
+
+  btn.classList.remove('loading');
+  textEl.textContent = 'Submit responses';
+  if (spinner) spinner.outerHTML = '<svg id="submitArrow" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
 
 // Background constellation
