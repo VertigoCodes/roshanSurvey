@@ -6,7 +6,7 @@
   },
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/survey.html",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
@@ -16,6 +16,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/survey.html" }
+    { "source": "/", "destination": "/survey.html" },
+    { "source": "/:path*", "destination": "/survey.html" }
   ]
 }
