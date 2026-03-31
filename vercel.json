@@ -1,9 +1,13 @@
 {
-  "functions": {
-    "api/survey.js": {
-      "maxDuration": 10
-    }
-  },
+  "version": 2,
+  "builds": [
+    { "src": "api/survey.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/survey", "dest": "/api/survey.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/index.html",
