@@ -1,0 +1,8 @@
+DEI programme team -> Prideforce team
+pride related sessions AT THIS ORGANISATION [ remove caps word ]
+LGBTQ inclusions AT WORK [ remove caps word ]
+How comfortable do you feel attending Pride-related sessions AT WORK ? [ remove caps word ]
+How psychologically safe do you feel AT THIS ORGANISATION overall when it comes to LGBTQ+ topics? [remoev caps words]
+add tooltip to distinguish between soft skills and hard skills
+
+LGBTQ+ -> LGBTQIA+
